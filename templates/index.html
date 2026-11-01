@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agent Courtroom</title>
+  <style>
+    /* ---------- Theme colors ---------- */
+    :root {
+      --cream: #fbf6e9;
+      --paper: #fffdf7;
+      --wood: #4a3322;
+      --wood-soft: #7a6350;
+      --gold: #c9a227;
+      --gold-light: #f1e2a8;
+      --line: #e6dcc3;
+      --red: #b3261e;
+      --green: #2e7d4f;
+      --shadow: 0 6px 18px rgba(74, 51, 34, 0.10);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--cream);
+      color: var(--wood);
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.55;
+    }
+
+    .wrap {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 24px 16px 64px;
+    }
+
+    h1, h2, h3, .stamp {
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--wood);
+    }
+
+    /* ---------- Header ---------- */
+    header { text-align: center; padding: 16px 0 8px; }
+    header h1 {
+      font-size: 2.6rem;
+      margin: 0;
+      letter-spacing: 1px;
+    }
+    header h1::after {
+      content: "";
+      display: block;
+      width: 90px;
+      height: 3px;
+      background: var(--gold);
+      margin: 10px auto 0;
+      border-radius: 2px;
+    }
+    header p { margin: 12px 0 0; color: var(--wood-soft); font-size: 1.05rem; }
+
+    h2 { font-size: 1.4rem; margin: 36px 0 12px; }
+
+    /* ---------- Cards ---------- */
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    /* ---------- Case picker ---------- */
+    .picker { display: flex; gap: 12px; flex-wrap: wrap; }
+    select, button {
+      font-size: 1rem;
+      border-radius: 10px;
+      padding: 11px 14px;
+      font-family: inherit;
+    }
+    select {
+      flex: 1 1 220px;
+      min-width: 0;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--wood);
+    }
+    button {
+      border: none;
+      background: var(--gold);
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(201, 162, 39, 0.4);
+      transition: transform 0.1s, background 0.2s;
+    }
+    button:hover:not(:disabled) { background: #b38f1c; transform: translateY(-1px); }
+    button:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
+
+    .trace-box { margin-top: 16px; }
+    .trace-box h3 { margin: 0 0 6px; font-size: 1.1rem; }
+    .trace-box .task { margin: 0 0 12px; color: var(--wood-soft); }
+    .trace-box ol { margin: 0; padding-left: 22px; }
+    .trace-box li { margin-bottom: 4px; overflow-wrap: anywhere; }
+
+    /* ---------- Error banner ---------- */
+    .error {
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      background: #fbe4e2;
+      border: 1px solid #e8a9a4;
+      color: var(--red);
+      font-weight: 600;
+    }
+
+    .hidden { display: none; }
+
+    /* ---------- The debate ---------- */
+    .debate {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .debate .card h3 {
+      margin: 0 0 10px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--gold-light);
+    }
+    .speech { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; }
+    .placeholder { color: var(--wood-soft); font-style: italic; }
+
+    .spinner-row { display: flex; align-items: center; gap: 10px; color: var(--wood-soft); }
+    .spinner {
+      width: 20px; height: 20px; flex: none;
+      border: 3px solid var(--gold-light);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ---------- The verdict ---------- */
+    .verdict { text-align: center; padding: 28px 20px; }
+    .verdict.guilty { border-top: 6px solid var(--red); }
+    .verdict.not-guilty { border-top: 6px solid var(--green); }
+
+    .stamp {
+      display: inline-block;
+      font-size: 2.4rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      padding: 8px 26px;
+      border: 5px double currentColor;
+      border-radius: 10px;
+      transform: rotate(-4deg);
+      margin: 4px 0 18px;
+    }
+    .guilty .stamp { color: var(--red); }
+    .not-guilty .stamp { color: var(--green); }
+
+    .score { font-family: Georgia, serif; font-size: 2rem; margin: 0 0 12px; }
+    .badge {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 999px;
+      background: var(--gold-light);
+      border: 1px solid var(--gold);
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+    .reason { max-width: 640px; margin: 16px auto 0; font-size: 1.05rem; }
+
+    /* ---------- Past trials ---------- */
+    .table-scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+    th { font-family: Georgia, serif; background: var(--gold-light); }
+    th:first-child { border-top-left-radius: 8px; }
+    th:last-child { border-top-right-radius: 8px; }
+    td.guilty { color: var(--red); font-weight: 700; }
+    td.not-guilty { color: var(--green); font-weight: 700; }
+
+    .summary { margin-top: 16px; }
+    .summary h3 { margin: 0 0 8px; }
+
+    /* ---------- Small screens ---------- */
+    @media (max-width: 640px) {
+      .debate { grid-template-columns: 1fr; }
+      header h1 { font-size: 2rem; }
+      .stamp { font-size: 1.7rem; padding: 6px 16px; }
+      button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <!-- 1. Header -->
+    <header>
+      <h1>Agent Courtroom</h1>
+      <p>Put an AI agent's run on trial.</p>
+    </header>
+
+    <!-- Error messages show up here -->
+    <div id="error" class="error hidden"></div>
+
+    <!-- 2. Case picker -->
+    <h2>The Case</h2>
+    <div class="picker">
+      <select id="case-select" aria-label="Choose a case"></select>
+      <button id="start-btn" disabled>Start trial</button>
+    </div>
+    <div id="trace-box" class="card trace-box hidden">
+      <h3 id="trace-name"></h3>
+      <p class="task" id="trace-task"></p>
+      <ol id="trace-steps"></ol>
+    </div>
+
+    <!-- 3. The debate -->
+    <h2>The Debate</h2>
+    <div class="debate">
+      <div class="card">
+        <h3>Prosecutor</h3>
+        <div id="prosecution"><p class="placeholder">Waiting for a trial to begin.</p></div>
+      </div>
+      <div class="card">
+        <h3>Defender</h3>
+        <div id="defense"><p class="placeholder">Waiting for a trial to begin.</p></div>
+      </div>
+    </div>
+
+    <!-- 4. The verdict -->
+    <h2>The Verdict</h2>
+    <div id="verdict" class="card verdict">
+      <p class="placeholder">The judge has not ruled yet.</p>
+    </div>
+
+    <!-- 5. Past trials -->
+    <h2>Past Trials</h2>
+    <div class="card">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Case</th><th>Verdict</th><th>Score</th></tr>
+          </thead>
+          <tbody id="history-body"></tbody>
+        </table>
+      </div>
+      <p id="history-empty" class="placeholder">No trials yet.</p>
+
+      <div class="summary">
+        <h3>Reporter's summary</h3>
+        <div id="summary"><p class="placeholder">Nothing to summarize yet.</p></div>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  // ---------- Small helpers ----------
+  const $ = (id) => document.getElementById(id);
+
+  // Build an element with text (textContent keeps the page safe from injected HTML)
+  function el(tag, text, className) {
+    const node = document.createElement(tag);
+    if (text !== undefined) node.textContent = text;
+    if (className) node.className = className;
+    return node;
+  }
+
+  function showError(message) {
+    $("error").textContent = message;
+    $("error").classList.remove("hidden");
+  }
+
+  function clearError() {
+    $("error").classList.add("hidden");
+  }
+
+  // Fetch JSON. If the server sent {"error": ...}, throw it as an Error.
+  async function getJSON(url, options) {
+    const res = await fetch(url, options);
+    let data = null;
+    try { data = await res.json(); } catch (e) { /* not JSON */ }
+    if (!res.ok) {
+      throw new Error((data && data.error) || "Request failed (" + res.status + ").");
+    }
+    return data;
+  }
+
+  // Replace the contents of a container with a spinner and a message
+  function showSpinner(container, message) {
+    const row = el("div", undefined, "spinner-row");
+    row.appendChild(el("div", undefined, "spinner"));
+    row.appendChild(el("span", message));
+    container.replaceChildren(row);
+  }
+
+  // ---------- Case picker ----------
+  async function loadTraces() {
+    try {
+      const names = await getJSON("/api/traces");
+      const select = $("case-select");
+      select.replaceChildren();
+      if (names.length === 0) {
+        select.appendChild(el("option", "No traces found"));
+        return;
+      }
+      names.forEach((name) => {
+        const option = el("option", name);
+        option.value = name;
+        select.appendChild(option);
+      });
+      $("start-btn").disabled = false;
+      showTrace();
+    } catch (err) {
+      showError(err.message);
+    }
+  }
+
+  // Show the selected trace's task and numbered steps
+  async function showTrace() {
+    const name = $("case-select").value;
+    if (!name) return;
+    try {
+      const trace = await getJSON("/api/trace/" + encodeURIComponent(name));
+      $("trace-name").textContent = trace.name || name;
+      $("trace-task").textContent = "Task: " + (trace.task || "");
+      const list = $("trace-steps");
+      list.replaceChildren();
+      (trace.steps || []).forEach((step) => list.appendChild(el("li", step)));
+      $("trace-box").classList.remove("hidden");
+    } catch (err) {
+      showError(err.message);
+    }
+  }
+
+  // ---------- Running a trial ----------
+  async function startTrial() {
+    const name = $("case-select").value;
+    if (!name) return;
+
+    clearError();
+    $("start-btn").disabled = true;
+    showSpinner($("prosecution"), "Court is in session...");
+    showSpinner($("defense"), "Court is in session...");
+    $("verdict").replaceChildren(el("p", "The judge is deliberating...", "placeholder"));
+
+    try {
+      const outcome = await getJSON("/api/trial", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name }),
+      });
+      showDebate(outcome);
+      showVerdict(outcome.result);
+      await loadHistory();
+      loadSummary(); // slow (another Gemini call), so don't wait for it
+    } catch (err) {
+      showError(err.message);
+      $("prosecution").replaceChildren(el("p", "The trial did not finish.", "placeholder"));
+      $("defense").replaceChildren(el("p", "The trial did not finish.", "placeholder"));
+      $("verdict").replaceChildren(el("p", "No verdict.", "placeholder"));
+    } finally {
+      $("start-btn").disabled = false;
+    }
+  }
+
+  function showDebate(outcome) {
+    $("prosecution").replaceChildren(el("p", outcome.prosecution, "speech"));
+    $("defense").replaceChildren(el("p", outcome.defense, "speech"));
+  }
+
+  function showVerdict(result) {
+    const guilty = result.verdict === "GUILTY";
+    const card = $("verdict");
+    card.className = "card verdict " + (guilty ? "guilty" : "not-guilty");
+    card.replaceChildren(
+      el("div", result.verdict, "stamp"),
+      el("p", result.score + " / 10", "score"),
+      el("span", (result.failure_type || "none").replaceAll("_", " "), "badge"),
+      el("p", result.reason, "reason")
+    );
+  }
+
+  // ---------- Past trials ----------
+  async function loadHistory() {
+    try {
+      const history = await getJSON("/api/history");
+      const body = $("history-body");
+      body.replaceChildren();
+      history.forEach((item) => {
+        const row = document.createElement("tr");
+        const verdictClass = item.verdict === "GUILTY" ? "guilty" : "not-guilty";
+        row.appendChild(el("td", item.case));
+        row.appendChild(el("td", item.verdict, verdictClass));
+        row.appendChild(el("td", item.score + " / 10"));
+        body.appendChild(row);
+      });
+      $("history-empty").classList.toggle("hidden", history.length > 0);
+    } catch (err) {
+      showError(err.message);
+    }
+  }
+
+  async function loadSummary() {
+    const box = $("summary");
+    showSpinner(box, "The reporter is writing...");
+    try {
+      const text = await getJSON("/api/summary");
+      if (text) {
+        box.replaceChildren(el("p", text, "speech"));
+      } else {
+        box.replaceChildren(el("p", "Nothing to summarize yet.", "placeholder"));
+      }
+    } catch (err) {
+      box.replaceChildren(el("p", "Summary unavailable.", "placeholder"));
+      showError(err.message);
+    }
+  }
+
+  // ---------- Start up ----------
+  $("case-select").addEventListener("change", showTrace);
+  $("start-btn").addEventListener("click", startTrial);
+
+  loadTraces();
+  loadHistory().then(loadSummary);
+</script>
+</body>
+</html>
