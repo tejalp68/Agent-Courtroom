@@ -1,0 +1,10 @@
+{
+  "name": "Math agent that did everything right",
+  "task": "What is 15% of 840?",
+  "steps": [
+    "Thought: I should use the calculator.",
+    "Tool call: calculator('840 * 0.15')",
+    "Tool result: 126.0",
+    "Final answer: 15% of 840 is 126."
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "name": "Weather agent used the wrong tool",
+  "task": "What is the weather in Pune right now?",
+  "steps": [
+    "Thought: I need the weather for Pune.",
+    "Tool call: calculator('Pune weather')",
+    "Tool result: Error - cannot calculate 'Pune weather'",
+    "Final answer: It is probably sunny and 28C in Pune today."
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "Summary agent ignored the length rule",
+  "task": "Summarize this article in exactly 2 sentences: 'Solar power is growing fast. Costs have dropped 80% in ten years. Many countries now add more solar than coal. Storage is still a challenge.'",
+  "steps": [
+    "Thought: I will write a summary.",
+    "Final answer: Solar power is growing fast. Costs have dropped 80% in ten years. Many countries now add more solar than coal. Storage is still a challenge."
+  ]
+}
