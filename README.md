@@ -75,6 +75,7 @@ agent-courtroom/
 ├── traces/               agent runs to audit (JSON files)
 ├── screenshots/          output screenshots used in this README
 ├── report.json           saved verdicts (created when you run it)
+├── Output                demo video/demo screenshots
 ├── pyproject.toml        dependencies (uv)
 ├── uv.lock
 └── .env.example          template for your API key
@@ -114,7 +115,7 @@ uv run courtroom.py
 Audit one trace:
 
 ```bash
-uv run courtroom.py traces/Rag.json
+uv run courtroom.py traces/trace_info_rag.json
 ```
 
 The output shows the prosecutor's charges, the defender's reply, the judge's verdict, and a reporter summary. All verdicts are saved to `report.json`.
@@ -179,4 +180,4 @@ Changes needed beyond this capstone:
 
 ## Tech stack
 
-Python · Gemini (`google-genai`) · LangGraph (audited system) · Tavily (audited system's search) · MCP (optional) · Flask (optional) · uv
+Python · Gemini (`google-genai`) · Flask (optional) · uv
