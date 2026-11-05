@@ -180,4 +180,4 @@ Changes needed beyond this capstone:
 
 ## Tech stack
 
-Python · Gemini (`google-genai`) · Flask (optional) · uv
+Python · Gemini (`google-genai`) · Flask· uv
